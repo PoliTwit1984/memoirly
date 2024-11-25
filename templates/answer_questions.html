@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="answer-container">
+    <div class="answer-header">
+        <h1 class="page-title">Questions for {{ member.name }}</h1>
+        <p class="header-subtitle">Share your memories and stories with your family</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="answer-form">
+        {% for question in member.questions %}
+        <div class="question-card {% if question.answered_at %}answered{% endif %}" id="question-{{ question.id }}">
+            <h3 class="question-text">{{ question.content }}</h3>
+            
+            {% if not question.answered_at %}
+            <div class="answer-section">
+                <div class="form-group">
+                    <label for="answer_{{ question.id }}">Your Answer</label>
+                    <textarea 
+                        id="answer_{{ question.id }}" 
+                        name="answer_{{ question.id }}" 
+                        rows="4"
+                        placeholder="Share your memory..."
+                    >{{ question.answer if question.answer else '' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="image_{{ question.id }}">
+                        <div class="image-upload-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            Add a Photo
+                        </div>
+                    </label>
+                    <input 
+                        type="file" 
+                        id="image_{{ question.id }}" 
+                        name="image_{{ question.id }}"
+                        accept="image/*"
+                        class="file-input"
+                        onchange="previewImage(this, {{ question.id }})"
+                    >
+                    <div id="preview_{{ question.id }}" class="image-preview"></div>
+                </div>
+            </div>
+            {% else %}
+            <div class="answered-content">
+                <p class="answer-text">{{ question.answer }}</p>
+                {% if question.image_path %}
+                <div class="answer-image">
+                    <img src="{{ url_for('static', filename='uploads/' + question.image_path) }}" alt="Shared memory">
+                </div>
+                {% endif %}
+                <div class="answer-meta">
+                    Answered on {{ question.answered_at.strftime('%B %d, %Y') }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if member.questions|selectattr('answered_at', 'none')|list|length > 0 %}
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Save Responses</button>
+        </div>
+        {% else %}
+        <div class="all-answered">
+            <h2>Thank You!</h2>
+            <p>You've answered all the questions. Your family will treasure these memories.</p>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<style>
+.answer-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.answer-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.header-subtitle {
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.question-card {
+    background-color: var(--background-light);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.question-card.answered {
+    border-left: 4px solid var(--success-color);
+}
+
+.question-text {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+.answer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.image-upload-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 2px dashed var(--secondary-color);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.image-upload-button:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.file-input {
+    display: none;
+}
+
+.image-preview {
+    margin-top: 1rem;
+}
+
+.image-preview img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+}
+
+.answered-content {
+    background-color: var(--background-dark);
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.answer-text {
+    white-space: pre-wrap;
+}
+
+.answer-image {
+    margin: 1rem 0;
+}
+
+.answer-image img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+}
+
+.answer-meta {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.form-actions {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.form-actions .btn-primary {
+    min-width: 200px;
+}
+
+.all-answered {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.all-answered h2 {
+    color: var(--success-color);
+    margin-bottom: 1rem;
+}
+
+.all-answered p {
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .answer-container {
+        padding: 1rem;
+    }
+    
+    .question-card {
+        padding: 1rem;
+    }
+}
+</style>
+
+<script>
+function previewImage(input, questionId) {
+    const preview = document.getElementById(`preview_${questionId}`);
+    const file = input.files[0];
+    
+    if (file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <img src="${e.target.result}" alt="Preview">
+                <button type="button" class="btn-secondary" onclick="removeImage(${questionId})">
+                    Remove Image
+                </button>
+            `;
+        }
+        
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeImage(questionId) {
+    const input = document.getElementById(`image_${questionId}`);
+    const preview = document.getElementById(`preview_${questionId}`);
+    
+    input.value = '';
+    preview.innerHTML = '';
+}
+
+// Auto-save draft responses
+const textareas = document.querySelectorAll('textarea');
+textareas.forEach(textarea => {
+    textarea.addEventListener('input', function() {
+        localStorage.setItem(this.id, this.value);
+    });
+    
+    // Load saved drafts
+    const savedValue = localStorage.getItem(textarea.id);
+    if (savedValue) {
+        textarea.value = savedValue;
+    }
+});
+
+// Clear drafts on form submit
+document.querySelector('form').addEventListener('submit', function() {
+    textareas.forEach(textarea => {
+        localStorage.removeItem(textarea.id);
+    });
+});
+</script>
+{% endblock %}

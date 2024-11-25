@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% from "components/question_card.html" import render_question_card %}
+{% from "components/stats_cards.html" import render_stats_cards %}
+{% from "components/modals.html" import render_share_modal, render_delete_modal %}
+{% from "components/detail_styles.html" import render_styles %}
+{% from "components/detail_scripts.html" import render_scripts %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="detail-header">
+        <div class="header-content">
+            <h1 class="page-title">{{ member.name }}</h1>
+            <p class="relationship-tag">{{ member.relationship }}</p>
+        </div>
+        <div class="header-actions">
+            <button onclick="generateLink({{ member.id }})" class="btn-primary">Share Questions</button>
+            <button onclick="generateMoreQuestions({{ member.id }})" class="btn-secondary" id="generateBtn">Generate More Questions</button>
+        </div>
+    </div>
+
+    {{ render_stats_cards(member) }}
+
+    <div class="add-question-section">
+        <h2 class="section-title">Add Your Own Question</h2>
+        <form id="addQuestionForm" class="add-question-form">
+            <div class="input-group">
+                <input type="text" 
+                       id="customQuestion" 
+                       name="question" 
+                       placeholder="Type your question here..." 
+                       required
+                       class="question-input">
+                <div class="button-group">
+                    <button type="button" onclick="improveQuestion()" class="btn-secondary">
+                        <svg class="ai-icon" viewBox="0 0 24 24" width="16" height="16">
+                            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                            <path fill="currentColor" d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4z"/>
+                        </svg>
+                        Improve with AI
+                    </button>
+                    <button type="button" onclick="addQuestion()" class="btn-primary">Add Question</button>
+                </div>
+            </div>
+            <div class="input-help">
+                Add your own personal question to learn more about {{ member.name }}'s memories and experiences.
+                Use the "Improve with AI" button to enhance your question.
+            </div>
+        </form>
+        <div id="improvedQuestion" class="improved-question hidden">
+            <h3>AI Improved Version:</h3>
+            <p id="improvedText"></p>
+            <button onclick="useImprovedVersion()" class="btn-secondary use-improved">Use This Version</button>
+        </div>
+    </div>
+
+    <div class="questions-section" id="questionsContainer">
+        <h2 class="section-title">Questions & Responses</h2>
+        {% for question in member.questions %}
+            {{ render_question_card(question) }}
+        {% endfor %}
+    </div>
+</div>
+
+{{ render_share_modal(member) }}
+{{ render_delete_modal() }}
+{{ render_styles() }}
+{{ render_scripts(member.id) }}
+
+<style>
+.add-question-section {
+    background: var(--background-light);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.add-question-form {
+    margin-top: 1rem;
+}
+
+.input-group {
+    display: flex;
+    gap: 1rem;
+}
+
+.button-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.question-input {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--secondary-color);
+    background-color: var(--background-dark);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.question-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+}
+
+.input-help {
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.ai-icon {
+    margin-right: 0.5rem;
+    vertical-align: text-bottom;
+}
+
+.improved-question {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--secondary-color);
+}
+
+.improved-question h3 {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.improved-question p {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+}
+
+.use-improved {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .button-group button {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+async function improveQuestion() {
+    const input = document.getElementById('customQuestion');
+    const question = input.value.trim();
+    
+    if (!question) {
+        alert('Please enter a question first.');
+        return;
+    }
+
+    const improveBtn = document.querySelector('button[onclick="improveQuestion()"]');
+    const originalText = improveBtn.innerHTML;
+    improveBtn.innerHTML = `
+        <svg class="ai-icon" viewBox="0 0 24 24" width="16" height="16">
+            <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+            <path fill="currentColor" d="M12 6v12M6 12h12"/>
+        </svg>
+        Improving...
+    `;
+    improveBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`/api/improve_question/${memberId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ question: question })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (data.improved) {
+            const improvedDiv = document.getElementById('improvedQuestion');
+            const improvedText = document.getElementById('improvedText');
+            improvedText.textContent = data.improved;
+            improvedDiv.classList.remove('hidden');
+            
+            // Scroll to the improved question
+            improvedDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            throw new Error('No improved question received');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while improving the question. Please try again.');
+    } finally {
+        improveBtn.innerHTML = originalText;
+        improveBtn.disabled = false;
+    }
+}
+
+function useImprovedVersion() {
+    const improvedText = document.getElementById('improvedText').textContent;
+    const input = document.getElementById('customQuestion');
+    input.value = improvedText;
+    document.getElementById('improvedQuestion').classList.add('hidden');
+    input.focus();
+}
+
+async function addQuestion() {
+    const input = document.getElementById('customQuestion');
+    const question = input.value.trim();
+    
+    if (!question) {
+        alert('Please enter a question.');
+        return;
+    }
+
+    const addBtn = document.querySelector('button[onclick="addQuestion()"]');
+    const originalText = addBtn.textContent;
+    addBtn.textContent = 'Adding...';
+    addBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`/api/add_question/${memberId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ question: question })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        if (data.success) {
+            // Reload the page to show the new question
+            window.location.reload();
+        } else {
+            throw new Error('Failed to add question');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    } finally {
+        addBtn.textContent = originalText;
+        addBtn.disabled = false;
+    }
+}
+
+// Prevent form submission on enter key
+document.getElementById('addQuestionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+});
+</script>
+{% endblock %}

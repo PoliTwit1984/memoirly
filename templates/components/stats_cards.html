@@ -1,0 +1,16 @@
+{% macro render_stats_cards(member) %}
+<div class="stats-cards">
+    <div class="stat-card">
+        <div class="stat-value" id="totalQuestions">{{ member.questions|length }}</div>
+        <div class="stat-label">Total Questions</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ member.questions|selectattr('answered_at')|list|length }}</div>
+        <div class="stat-label">Answered</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ member.questions|selectattr('image_path')|list|length }}</div>
+        <div class="stat-label">Photos Shared</div>
+    </div>
+</div>
+{% endmacro %}
