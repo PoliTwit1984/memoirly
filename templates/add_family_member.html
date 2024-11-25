@@ -4,7 +4,7 @@
 <div class="form-container">
     <div class="form-card">
         <h2 class="section-title">Add Family Member</h2>
-        <form method="POST" action="{{ url_for('add_family_member') }}" class="member-form">
+        <form method="POST" action="{{ url_for('family.add_family_member') }}" class="member-form">
             <div class="form-group">
                 <label for="name">Name</label>
                 <input type="text" id="name" name="name" required>
@@ -45,7 +45,7 @@
             </div>
             
             <div class="form-actions">
-                <a href="{{ url_for('dashboard') }}" class="btn-secondary">Cancel</a>
+                <a href="{{ url_for('family.dashboard') }}" class="btn-secondary">Cancel</a>
                 <button type="submit" class="btn-primary">Add Family Member</button>
             </div>
         </form>

@@ -38,13 +38,18 @@ def add_family_member():
         
         # Generate AI questions
         questions = generate_questions(relationship, notes)
-        for i, q in enumerate(questions):
+        position = 0
+        
+        for q in questions:
             question = Question(
-                content=q,
+                content=q['content'],
+                category=q['category'],
                 family_member_id=new_member.id,
-                position=i
+                position=position
             )
+            position += 1
             db.session.add(question)
+        
         db.session.commit()
         
         return redirect(url_for('family.dashboard'))
@@ -92,3 +97,38 @@ def generate_link(member_id):
     
     link = url_for('family.answer_questions', member_id=member_id, _external=True)
     return jsonify({'link': link})
+
+@family.route('/api/add_question/<int:member_id>', methods=['POST'])
+@login_required
+def add_question(member_id):
+    member = FamilyMember.query.get_or_404(member_id)
+    if member.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.get_json()
+    question_text = data.get('question', '').strip()
+    
+    if not question_text:
+        return jsonify({'error': 'Question cannot be empty'}), 400
+    
+    # Get the highest current position
+    max_position = db.session.query(db.func.max(Question.position)).filter_by(family_member_id=member_id).scalar() or -1
+    
+    # Create new question
+    question = Question(
+        content=question_text,
+        family_member_id=member_id,
+        position=max_position + 1,
+        category='Custom Questions',  # Custom questions get their own category
+        is_custom=True
+    )
+    
+    db.session.add(question)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'question': {
+        'id': question.id,
+        'content': question.content,
+        'position': question.position,
+        'category': question.category
+    }})

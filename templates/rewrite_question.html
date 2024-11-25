@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!question) return;
 
         try {
-            const response = await fetch('/rewrite_question', {
+            const response = await fetch('/api/rewrite_question', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

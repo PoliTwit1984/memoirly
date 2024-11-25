@@ -69,7 +69,7 @@ function handleDrop(e) {
 }
 
 function updateQuestionOrder(questionOrder) {
-    fetch(`/api/reorder_questions/${memberId}`, {
+    fetch(`/api/questions/reorder/${memberId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ function updateQuestionOrder(questionOrder) {
 }
 
 function generateLink(memberId) {
-    fetch(`/api/generate_link/${memberId}`)
+    fetch(`/api/family/generate_link/${memberId}`)
         .then(response => response.json())
         .then(data => {
             document.getElementById('shareLink').value = data.link;
@@ -102,7 +102,7 @@ function generateMoreQuestions(memberId) {
     button.textContent = 'Generating...';
     button.disabled = true;
 
-    fetch(`/api/generate_more_questions/${memberId}`)
+    fetch(`/api/questions/generate_more/${memberId}`)
         .then(response => response.json())
         .then(data => {
             const questionsSection = document.querySelector('.questions-section');
@@ -182,7 +182,7 @@ function confirmDelete() {
     const questionCard = document.getElementById(`question-${questionToDelete}`);
     questionCard.classList.add('deleting');
     
-    fetch(`/api/delete_question/${questionToDelete}`, {
+    fetch(`/api/questions/delete/${questionToDelete}`, {
         method: 'DELETE'
     })
     .then(response => response.json())
@@ -236,7 +236,7 @@ function sendEmail() {
     button.textContent = 'Sending...';
     button.disabled = true;
     
-    fetch(`/api/send_email/${memberId}`)
+    fetch(`/api/family/send_email/${memberId}`)
         .then(response => response.json())
         .then(data => {
             button.textContent = 'Sent!';

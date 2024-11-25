@@ -6,7 +6,7 @@ from utils import improve_question_with_ai, generate_questions
 
 questions = Blueprint('questions', __name__)
 
-@questions.route('/api/improve_question/<int:member_id>', methods=['POST'])
+@questions.route('/api/questions/improve/<int:member_id>', methods=['POST'])
 @login_required
 def improve_question(member_id):
     try:
@@ -30,7 +30,7 @@ def improve_question(member_id):
         logger.error(f"Error in improve_question route: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
-@questions.route('/api/add_question/<int:member_id>', methods=['POST'])
+@questions.route('/api/questions/add/<int:member_id>', methods=['POST'])
 @login_required
 def add_question(member_id):
     member = FamilyMember.query.get_or_404(member_id)
@@ -51,6 +51,7 @@ def add_question(member_id):
         content=question_text,
         family_member_id=member_id,
         position=max_position + 1,
+        category='Custom Questions',  # Custom questions get their own category
         is_custom=True
     )
     
@@ -60,10 +61,11 @@ def add_question(member_id):
     return jsonify({'success': True, 'question': {
         'id': question.id,
         'content': question.content,
-        'position': question.position
+        'position': question.position,
+        'category': question.category
     }})
 
-@questions.route('/api/generate_more_questions/<int:member_id>')
+@questions.route('/api/questions/generate_more/<int:member_id>')
 @login_required
 def generate_more_questions(member_id):
     member = FamilyMember.query.get_or_404(member_id)
@@ -80,7 +82,8 @@ def generate_more_questions(member_id):
     # Add questions to database
     for i, q in enumerate(questions):
         question = Question(
-            content=q,
+            content=q['content'],
+            category=q['category'],
             family_member_id=member.id,
             position=max_position + i + 1
         )
@@ -88,14 +91,15 @@ def generate_more_questions(member_id):
         db.session.commit()  # Commit each question to get its ID
         new_questions.append({
             'id': question.id,
-            'content': q,
+            'content': q['content'],
+            'category': q['category'],
             'answered': False,
             'position': question.position
         })
     
     return jsonify({'questions': new_questions})
 
-@questions.route('/api/delete_question/<int:question_id>', methods=['DELETE'])
+@questions.route('/api/questions/delete/<int:question_id>', methods=['DELETE'])
 @login_required
 def delete_question(question_id):
     question = Question.query.get_or_404(question_id)
@@ -122,7 +126,7 @@ def delete_question(question_id):
     
     return jsonify({'success': True})
 
-@questions.route('/api/reorder_questions/<int:member_id>', methods=['POST'])
+@questions.route('/api/questions/reorder/<int:member_id>', methods=['POST'])
 @login_required
 def reorder_questions(member_id):
     member = FamilyMember.query.get_or_404(member_id)

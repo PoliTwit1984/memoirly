@@ -1,11 +1,15 @@
-import os
-from app import app, db, User, FamilyMember, Question
+from config import app, db
+from models import User, FamilyMember, Question
 
-# Delete the existing database file
-db_path = 'instance/memoirly.db'
-if os.path.exists(db_path):
-    os.remove(db_path)
+def init_db():
+    with app.app_context():
+        # Drop all tables
+        db.drop_all()
+        
+        # Create all tables
+        db.create_all()
+        
+        print("Database initialized successfully!")
 
-# Create all tables
-with app.app_context():
-    db.create_all()
+if __name__ == '__main__':
+    init_db()

@@ -23,6 +23,7 @@ class FamilyMember(db.Model):
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(50))  # New field for question category
     family_member_id = db.Column(db.Integer, db.ForeignKey('family_member.id'), nullable=False)
     answer = db.Column(db.Text)
     image_path = db.Column(db.String(200))

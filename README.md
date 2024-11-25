@@ -7,6 +7,7 @@ Memoirly is a Flask-based web application designed to help preserve family memor
 - User authentication and account management
 - Add and manage family members
 - AI-generated personalized questions based on relationships
+- Categorized questions organized into meaningful themes
 - Question management (add, improve, reorder, delete)
 - Photo upload support for answers
 - Shareable links for family members to answer questions
@@ -60,7 +61,7 @@ python init_db.py
 python main.py
 ```
 
-The application will be available at `http://localhost:3000`
+The application will be available at `http://localhost:3001`
 
 ## Key Components
 
@@ -68,7 +69,7 @@ The application will be available at `http://localhost:3000`
 
 - **User**: Manages user accounts and authentication
 - **FamilyMember**: Stores family member information and relationships
-- **Question**: Handles questions, answers, and associated media
+- **Question**: Handles questions, answers, categories, and associated media
 
 ### Routes
 
@@ -80,7 +81,13 @@ The application will be available at `http://localhost:3000`
 ### Features
 
 1. **AI Integration**
-   - Generates personalized questions based on relationships
+   - Generates 25 personalized questions based on relationships
+   - Questions are categorized into five meaningful themes:
+     * Childhood and Early Life
+     * Family Relationships
+     * Major Life Events
+     * Life Wisdom and Values
+     * Fun and Quirky Reflections
    - Improves questions for better engagement
    - Uses Claude AI for natural language processing
 
@@ -90,15 +97,17 @@ The application will be available at `http://localhost:3000`
    - Generate shareable links for answers
 
 3. **Question Management**
-   - AI-generated starter questions
-   - Custom question addition
-   - Question reordering
+   - AI-generated categorized starter questions
+   - Custom question addition with category assignment
+   - Question reordering within categories
    - Question improvement suggestions
+   - Question deletion with position management
 
 4. **Answer Collection**
    - Text-based answers
    - Photo upload support
    - Answer tracking and management
+   - Organized display by question categories
 
 ## Dependencies
 
@@ -117,6 +126,9 @@ The project follows a modular structure for better maintainability:
 - Database models are separated by functionality
 - Utility functions are isolated in utils.py
 - Configuration is centralized in config.py
+- API endpoints follow a consistent structure:
+  * `/api/questions/...` for question operations
+  * `/api/family/...` for family member operations
 
 ## Security Features
 
@@ -125,3 +137,34 @@ The project follows a modular structure for better maintainability:
 - User session management
 - Protected routes with login requirements
 - Secure link generation for sharing
+
+## Question Categories
+
+The application organizes questions into five distinct categories to capture a comprehensive range of memories and experiences:
+
+1. **Childhood and Early Life**
+   - Early memories and experiences
+   - Family traditions and customs
+   - Personal milestones and achievements
+
+2. **Family Relationships**
+   - Connections with family members
+   - Family dynamics and influences
+   - Shared experiences and bonds
+
+3. **Major Life Events**
+   - Significant moments and decisions
+   - Challenges and how they were overcome
+   - Personal and professional milestones
+
+4. **Life Wisdom and Values**
+   - Life lessons and insights
+   - Personal values and beliefs
+   - Advice for future generations
+
+5. **Fun and Quirky Reflections**
+   - Favorite memories and moments
+   - Hobbies and interests
+   - Light-hearted stories and anecdotes
+
+Each category is designed to elicit different types of memories and stories, creating a well-rounded collection of family history.
