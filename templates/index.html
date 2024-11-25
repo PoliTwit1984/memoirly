@@ -2,105 +2,56 @@
 
 {% block content %}
 <div class="hero">
-    <h1 class="hero-title">Preserve Your Family's Legacy</h1>
-    <p class="hero-subtitle">Create meaningful conversations and capture precious memories with AI-generated questions tailored to your family relationships.</p>
-    <div class="hero-buttons">
-        <a href="{{ url_for('auth.register') }}" class="btn-primary">Get Started</a>
-        <a href="{{ url_for('auth.login') }}" class="btn-secondary">Sign In</a>
+    <h1 class="hero-title">Connect with Your Tribe</h1>
+    <p class="hero-subtitle">Share memories, stories, and experiences with your closest circles - whether it's family, friends, or your community.</p>
+</div>
+
+<div class="tribe-actions">
+    <div class="tribe-card">
+        <h2>Join Your Tribe</h2>
+        <p>Have an invitation code? Enter it below to join your tribe.</p>
+        <form method="POST" action="{{ url_for('main.join_tribe_by_code') }}" class="tribe-form">
+            <input type="text" id="tribe_code" name="tribe_code" placeholder="Enter your tribe code" required>
+            <button type="submit" class="btn-primary">JOIN TRIBE</button>
+        </form>
+    </div>
+
+    <div class="tribe-card">
+        <h2>Create a New Tribe</h2>
+        <p>Start your own tribe and invite others to join.</p>
+        <a href="{{ url_for('main.create_tribe') }}" class="btn-secondary">CREATE TRIBE</a>
     </div>
 </div>
 
 <div class="features">
     <div class="feature-card">
-        <h3>AI-Powered Questions</h3>
-        <p>Generate personalized questions based on family relationships and personal notes to capture meaningful stories.</p>
+        <h3>Share Stories</h3>
+        <p>Create and share meaningful memories with your tribe through photos, stories, and experiences.</p>
     </div>
     <div class="feature-card">
-        <h3>Share Memories</h3>
-        <p>Easily share questions with family members and collect their responses, photos, and stories in one place.</p>
+        <h3>Stay Connected</h3>
+        <p>Keep your tribe close no matter the distance. Share updates, milestones, and daily moments.</p>
     </div>
     <div class="feature-card">
         <h3>Preserve History</h3>
-        <p>Build a lasting digital archive of your family's memories, stories, and experiences for future generations.</p>
+        <p>Build a lasting digital archive of your tribe's memories and experiences for future generations.</p>
     </div>
 </div>
 
-<style>
-.hero {
-    text-align: center;
-    padding: 4rem 1rem;
-    max-width: 800px;
-    margin: 0 auto;
-}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const joinForm = document.querySelector('.tribe-form');
+    const createButton = document.querySelector('.create-tribe .btn-secondary');
 
-.hero-title {
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-    background: linear-gradient(45deg, var(--primary-color), #8B85FF);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
+    joinForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        window.location.href = "{{ url_for('auth.register') }}?next=join_tribe&code=" + document.getElementById('tribe_code').value;
+    });
 
-.hero-subtitle {
-    font-size: 1.25rem;
-    color: var(--text-secondary);
-    margin-bottom: 2rem;
-}
-
-.hero-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-}
-
-.features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    padding: 4rem 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.feature-card {
-    background-color: var(--background-light);
-    padding: 2rem;
-    border-radius: 1rem;
-    text-align: center;
-    transition: transform 0.3s ease;
-}
-
-.feature-card:hover {
-    transform: translateY(-5px);
-}
-
-.feature-card h3 {
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.feature-card p {
-    color: var(--text-secondary);
-}
-
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: 2rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1.1rem;
-    }
-    
-    .hero-buttons {
-        flex-direction: column;
-    }
-    
-    .features {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
+    createButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = "{{ url_for('auth.register') }}?next=create_tribe";
+    });
+});
+</script>
 {% endblock %}

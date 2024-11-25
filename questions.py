@@ -50,8 +50,11 @@ def add_question(member_id):
     question = Question(
         content=question_text,
         family_member_id=member_id,
+        created_by_id=current_user.id,  # Set the creator
         position=max_position + 1,
         category='Custom Questions',  # Custom questions get their own category
+        visibility='circle',  # Set default visibility
+        is_collaborative=False,  # Set default collaboration setting
         is_custom=True
     )
     
@@ -85,7 +88,11 @@ def generate_more_questions(member_id):
             content=q['content'],
             category=q['category'],
             family_member_id=member.id,
-            position=max_position + i + 1
+            created_by_id=current_user.id,  # Set the creator
+            position=max_position + i + 1,
+            visibility='circle',  # Set default visibility
+            is_collaborative=False,  # Set default collaboration setting
+            is_custom=False  # AI-generated questions
         )
         db.session.add(question)
         db.session.commit()  # Commit each question to get its ID

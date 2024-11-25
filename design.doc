@@ -1,0 +1,175 @@
+# Tribez Design System
+
+## Core Design Principles
+- Clean and minimal
+- Clear visual hierarchy
+- Consistent spacing
+- Simple interactions
+
+## Color Palette
+
+### Primary Colors
+- Primary Color: #FF5722 (Coral)
+  - Used for header, footer, and buttons
+- Background Color: #FFF4E6 (Light Cream)
+- Card Background: #FFFFFF (White)
+- Text Color: #3E3A3A (Dark Gray)
+- Highlight Color: #FFEB99 (Pale Yellow)
+  - Used for "Preserve History" card
+
+## Typography
+
+### Fonts
+- Headings: Poppins (600, 700)
+- Body Text: Inter (400, 500)
+
+### Font Sizes
+- Hero Title: 3rem (2rem on mobile)
+- Card Headings: 1.5rem
+- Body Text: 1rem
+- Button Text: 1rem uppercase
+
+## Layout Components
+
+### Header
+```css
+.navbar {
+    background-color: #FF5722;
+    padding: 1rem 0;
+}
+```
+
+### Cards
+```css
+.card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+```
+
+### Buttons
+```css
+.button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    background-color: #FF5722;
+    color: white;
+    text-transform: uppercase;
+}
+```
+
+### Form Elements
+```css
+input[type="text"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+```
+
+## Grid System
+
+### Feature Cards
+- 3-column grid on desktop
+- Single column on mobile
+- Gap: 2rem
+
+### Tribe Actions
+- 2-column grid on desktop
+- Single column on mobile
+- Gap: 2rem
+
+## Spacing
+
+### Vertical Rhythm
+- Section Padding: 2rem
+- Card Padding: 2rem
+- Text Margins: 1rem bottom
+- Button Padding: 0.75rem 1.5rem
+
+### Container
+- Max Width: 1200px
+- Side Padding: 1.5rem
+
+## Responsive Breakpoints
+
+### Mobile (< 768px)
+```css
+@media (max-width: 768px) {
+    .hero-title { font-size: 2rem; }
+    .grid { grid-template-columns: 1fr; }
+    .nav-content { flex-direction: column; }
+}
+```
+
+## Best Practices
+
+1. Layout
+   - Use consistent spacing
+   - Maintain clear visual hierarchy
+   - Keep layouts simple and clean
+
+2. Typography
+   - Use clear, readable fonts
+   - Maintain proper contrast
+   - Keep text aligned left or center
+
+3. Colors
+   - Use primary color sparingly
+   - Maintain good contrast
+   - Keep background colors subtle
+
+4. Components
+   - Keep card designs simple
+   - Use subtle shadows
+   - Maintain consistent padding
+
+5. Interactions
+   - Keep button states simple
+   - Use clear hover states
+   - Maintain good touch targets
+
+6. Accessibility
+   - Ensure sufficient color contrast
+   - Use semantic HTML
+   - Maintain proper focus states
+
+## Implementation Notes
+
+1. Header
+   - Simple coral background
+   - Clear navigation links
+   - Consistent button styles
+
+2. Hero Section
+   - Large, clear title
+   - Concise subtitle
+   - Proper spacing
+
+3. Cards
+   - Clean white background
+   - Subtle shadow
+   - Consistent padding
+   - Clear typography
+
+4. Buttons
+   - Clear call to action
+   - Uppercase text
+   - Consistent padding
+   - Full width in cards
+
+5. Footer
+   - Matches header color
+   - Simple content
+   - Proper spacing
+
+## Maintenance
+
+- Keep styles minimal and clean
+- Avoid unnecessary decorative elements
+- Maintain consistent spacing
+- Document all changes
+- Test across devices

@@ -34,7 +34,7 @@ def add_family_member():
             user_id=current_user.id
         )
         db.session.add(new_member)
-        db.session.commit()
+        db.session.flush()  # Get the new member's ID
         
         # Generate AI questions
         questions = generate_questions(relationship, notes)
@@ -45,7 +45,11 @@ def add_family_member():
                 content=q['content'],
                 category=q['category'],
                 family_member_id=new_member.id,
-                position=position
+                created_by_id=current_user.id,  # Set the creator
+                position=position,
+                visibility='circle',  # Set default visibility
+                is_collaborative=False,  # Set default collaboration setting
+                is_custom=False  # This is an AI-generated question
             )
             position += 1
             db.session.add(question)
@@ -118,9 +122,12 @@ def add_question(member_id):
     question = Question(
         content=question_text,
         family_member_id=member_id,
+        created_by_id=current_user.id,  # Set the creator
         position=max_position + 1,
         category='Custom Questions',  # Custom questions get their own category
-        is_custom=True
+        visibility='circle',  # Set default visibility
+        is_collaborative=False,  # Set default collaboration setting
+        is_custom=True  # This is a custom question
     )
     
     db.session.add(question)

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">Create New Tribe</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert {% if category == 'success' %}success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if tribe %}
+        <div class="card">
+            <h2 class="section-title">Tribe Created Successfully!</h2>
+            <div class="form-group">
+                <label>Share this code with others to join your tribe:</label>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <code style="background: var(--background-dark); padding: 0.75rem 1rem; border-radius: 0.75rem; font-family: monospace; font-size: 1.1rem;">{{ tribe.join_code }}</code>
+                    <button onclick="copyCode('{{ tribe.join_code }}')" 
+                            class="btn-primary">
+                        Copy Code
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <h3 class="section-title">Invite Members</h3>
+                <form method="POST" action="{{ url_for('main.invite_member', tribe_id=tribe.id) }}" style="display: flex; gap: 1rem; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <input type="email" name="email" required
+                               class="form-group input"
+                               placeholder="Enter email address">
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        Send Invitation
+                    </button>
+                </form>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <a href="{{ url_for('main.view_tribe', tribe_id=tribe.id) }}" 
+                   class="btn-primary">
+                    Go to Tribe
+                </a>
+                <a href="{{ url_for('main.list_tribes') }}" 
+                   class="btn-secondary">
+                    View All Tribes
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <form method="POST">
+                <div class="form-group">
+                    <label for="name">Tribe Name</label>
+                    <input type="text" id="name" name="name" required
+                           placeholder="Enter tribe name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="4"
+                              placeholder="Describe your tribe"></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    Create Tribe
+                </button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function copyCode(code) {
+    navigator.clipboard.writeText(code).then(function() {
+        alert('Code copied to clipboard!');
+    }).catch(function(err) {
+        console.error('Failed to copy code:', err);
+    });
+}
+</script>
+
+<style>
+/* Additional styles specific to create tribe page */
+.form-group input[type="email"] {
+    margin-bottom: 0;
+}
+
+code {
+    color: var(--text-primary);
+}
+
+.section-title {
+    margin-top: 0;
+}
+</style>
+{% endblock %}

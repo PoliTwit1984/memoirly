@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 class="page-title" style="margin-bottom: 0;">{{ tribe.name }}</h1>
+        <div style="display: flex; gap: 1.5rem;">
+            {% if membership.role == 'admin' %}
+            <a href="{{ url_for('main.tribe_settings', tribe_id=tribe.id) }}" 
+               class="btn-secondary" style="margin: 0;">
+                Settings
+            </a>
+            {% endif %}
+            <a href="{{ url_for('main.notification_settings', tribe_id=tribe.id) }}" 
+               class="btn-secondary" style="margin: 0;">
+                Notifications
+            </a>
+        </div>
+    </div>
+    
+    <div class="card">
+        <p style="color: var(--text-secondary); font-size: 1.1rem;">{{ tribe.description or 'No description' }}</p>
+        <div style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+            Created {{ tribe.created_at.strftime('%B %d, %Y') }}
+        </div>
+    </div>
+
+    {% if membership.role in ['admin', 'member'] %}
+    <div class="card">
+        <h2 class="section-title">Invite Others</h2>
+        <div class="form-group">
+            <label>Share this code to let others join the tribe:</label>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <code style="background: var(--background-dark); padding: 0.75rem 1rem; border-radius: 0.75rem; font-family: monospace; font-size: 1.1rem;">{{ tribe.join_code }}</code>
+                <button onclick="copyCode('{{ tribe.join_code }}')" 
+                        class="btn-primary">
+                    Copy Code
+                </button>
+            </div>
+        </div>
+        
+        <div style="border-top: 1px solid var(--text-secondary); margin-top: 2rem; padding-top: 2rem;">
+            <h3 class="section-title" style="font-size: 1.5rem;">Or Send Email Invitation</h3>
+            <form method="POST" action="{{ url_for('main.invite_member', tribe_id=tribe.id) }}" 
+                  style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <input type="email" name="email" required
+                           class="form-group input"
+                           placeholder="Enter email address">
+                </div>
+                <button type="submit" class="btn-primary">
+                    Send Invitation
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="grid" style="margin-top: 3rem;">
+        <!-- Members Section -->
+        <div class="card">
+            <h2 class="section-title">Members</h2>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for member in tribe.members %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; {% if not loop.last %}border-bottom: 1px solid var(--text-secondary){% endif %}">
+                    <div>
+                        <span style="font-weight: 500;">{{ member.user.name }}</span>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">({{ member.role }})</span>
+                    </div>
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Joined {{ member.joined_at.strftime('%B %d, %Y') }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Questions Section -->
+        <div class="card">
+            <h2 class="section-title">Recent Questions</h2>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for question in tribe.questions[:5] %}
+                <div style="padding: 0.5rem 0; {% if not loop.last %}border-bottom: 1px solid var(--text-secondary){% endif %}">
+                    <a href="#" style="color: var(--text-primary); text-decoration: none; display: block; transition: color 0.3s ease;">
+                        {{ question.content }}
+                    </a>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">
+                        Asked by {{ question.created_by.name }} on 
+                        {{ question.created_at.strftime('%B %d, %Y') }}
+                    </div>
+                </div>
+                {% else %}
+                <p style="color: var(--text-secondary);">No questions have been asked yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyCode(code) {
+    navigator.clipboard.writeText(code).then(function() {
+        alert('Code copied to clipboard!');
+    }).catch(function(err) {
+        console.error('Failed to copy code:', err);
+    });
+}
+</script>
+
+<style>
+/* Additional styles specific to tribe view */
+.form-group input[type="email"] {
+    margin-bottom: 0;
+}
+
+code {
+    color: var(--text-primary);
+}
+
+.grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

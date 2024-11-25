@@ -12,6 +12,9 @@ def load_user(user_id):
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
+    next_action = request.args.get('next')
+    tribe_code = request.args.get('code')
+    
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -19,7 +22,7 @@ def register():
         
         if User.query.filter_by(email=email).first():
             flash('Email already exists')
-            return redirect(url_for('auth.register'))
+            return redirect(url_for('auth.register', next=next_action, code=tribe_code))
         
         hashed_password = generate_password_hash(password, method='sha256')
         new_user = User(email=email, password=hashed_password, name=name)
@@ -27,12 +30,22 @@ def register():
         db.session.commit()
         
         login_user(new_user)
-        return redirect(url_for('family.dashboard'))
+
+        # Handle post-registration redirects based on the next parameter
+        if next_action == 'join_tribe' and tribe_code:
+            return redirect(url_for('main.join_tribe_by_code', tribe_code=tribe_code))
+        elif next_action == 'create_tribe':
+            return redirect(url_for('main.create_tribe'))
+        else:
+            return redirect(url_for('main.list_tribes'))
     
-    return render_template('register.html')
+    return render_template('register.html', next=next_action, tribe_code=tribe_code)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    next_action = request.args.get('next')
+    tribe_code = request.args.get('code')
+    
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -40,11 +53,18 @@ def login():
         
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for('family.dashboard'))
+            
+            # Handle post-login redirects based on the next parameter
+            if next_action == 'join_tribe' and tribe_code:
+                return redirect(url_for('main.join_tribe_by_code', tribe_code=tribe_code))
+            elif next_action == 'create_tribe':
+                return redirect(url_for('main.create_tribe'))
+            else:
+                return redirect(url_for('main.list_tribes'))
         else:
             flash('Invalid credentials')
     
-    return render_template('login.html')
+    return render_template('login.html', next=next_action, tribe_code=tribe_code)
 
 @auth.route('/logout')
 @login_required
