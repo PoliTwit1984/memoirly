@@ -1,85 +1,81 @@
 import React from 'react';
 import {
   TouchableOpacity,
+  ActivityIndicator,
   Text,
   StyleSheet,
-  ActivityIndicator,
-  Platform,
-  StyleProp,
   ViewStyle,
   TextStyle,
+  Platform,
+  Pressable,
+  PressableStateCallbackType,
 } from 'react-native';
-import { Colors, Typography, BorderRadius } from '../constants/Theme';
+import { Colors, Typography, Spacing, BorderRadius } from '../constants/Theme';
+import { platformShadow, createPlatformStyle } from '../utils/platformStyles';
+
+type ButtonSize = 'small' | 'medium' | 'large';
+type ButtonVariant = 'primary' | 'secondary' | 'outline';
 
 interface ButtonProps {
-  onPress: () => void;
   title: string;
-  loading?: boolean;
+  onPress: () => void;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   disabled?: boolean;
-  style?: StyleProp<ViewStyle>;
-  textStyle?: StyleProp<TextStyle>;
-  variant?: 'primary' | 'secondary' | 'outline';
-  size?: 'small' | 'medium' | 'large';
+  loading?: boolean;
+  style?: ViewStyle;
+  textStyle?: TextStyle;
+  testID?: string;
 }
 
 export function Button({
-  onPress,
   title,
-  loading = false,
-  disabled = false,
-  style,
-  textStyle,
+  onPress,
   variant = 'primary',
   size = 'medium',
+  disabled = false,
+  loading = false,
+  style,
+  textStyle,
+  testID,
 }: ButtonProps) {
-  const getVariantStyles = (): ViewStyle => {
+  const getBackgroundColor = (pressed: boolean) => {
+    if (disabled) {
+      return Colors.border;
+    }
+
     switch (variant) {
       case 'secondary':
-        return {
-          backgroundColor: Colors.surface,
-          borderWidth: 0,
-        };
+        return pressed ? `${Colors.primary}10` : Colors.background;
       case 'outline':
-        return {
-          backgroundColor: 'transparent',
-          borderWidth: 1,
-          borderColor: Colors.primary,
-        };
+        return pressed ? `${Colors.primary}10` : 'transparent';
       default:
-        return {
-          backgroundColor: Colors.primary,
-          borderWidth: 0,
-        };
+        return pressed ? Colors.primaryDark : Colors.primary;
     }
   };
 
-  const getSizeStyles = (): ViewStyle => {
-    switch (size) {
-      case 'small':
-        return {
-          paddingVertical: 8,
-          paddingHorizontal: 16,
-          minHeight: 36,
-        };
-      case 'large':
-        return {
-          paddingVertical: 16,
-          paddingHorizontal: 32,
-          minHeight: 54,
-        };
+  const getBorderColor = () => {
+    if (disabled) {
+      return Colors.border;
+    }
+
+    switch (variant) {
+      case 'secondary':
+        return Colors.border;
+      case 'outline':
+        return Colors.primary;
       default:
-        return {
-          paddingVertical: 12,
-          paddingHorizontal: 24,
-          minHeight: 48,
-        };
+        return 'transparent';
     }
   };
 
   const getTextColor = () => {
+    if (disabled) {
+      return Colors.text.secondary;
+    }
+
     switch (variant) {
       case 'secondary':
-        return Colors.text.primary;
       case 'outline':
         return Colors.primary;
       default:
@@ -87,69 +83,126 @@ export function Button({
     }
   };
 
-  const buttonStyles = [
-    styles.button,
-    getVariantStyles(),
-    getSizeStyles(),
-    disabled && styles.disabled,
-    Platform.OS === 'web' && styles.webButton,
-    style,
-  ];
+  const getSizeStyles = (): ViewStyle => {
+    switch (size) {
+      case 'small':
+        return {
+          paddingVertical: Spacing.sm,
+          paddingHorizontal: Spacing.md,
+        };
+      case 'large':
+        return {
+          paddingVertical: Spacing.lg,
+          paddingHorizontal: Spacing.xl,
+        };
+      default:
+        return {
+          paddingVertical: Spacing.md,
+          paddingHorizontal: Spacing.lg,
+        };
+    }
+  };
 
-  const textStyles = [
-    styles.text,
-    { color: getTextColor() },
-    size === 'small' && { fontSize: Typography.sizes.sm },
-    size === 'large' && { fontSize: Typography.sizes.lg },
-    textStyle,
-  ];
+  const getTextSize = (): TextStyle => {
+    switch (size) {
+      case 'small':
+        return { fontSize: Typography.sizes.sm };
+      case 'large':
+        return { fontSize: Typography.sizes.lg };
+      default:
+        return { fontSize: Typography.sizes.md };
+    }
+  };
 
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled || loading}
-      style={buttonStyles}
-      activeOpacity={0.8}
-    >
+  const renderContent = (pressed: boolean) => (
+    <>
       {loading ? (
         <ActivityIndicator
+          testID="activity-indicator"
           color={variant === 'primary' ? Colors.background : Colors.primary}
-          size="small"
+          size={size === 'small' ? 'small' : 'small'}
         />
       ) : (
-        <Text style={textStyles}>
+        <Text
+          style={[
+            styles.text,
+            getTextSize(),
+            { color: getTextColor() },
+            textStyle,
+          ]}
+        >
           {title}
         </Text>
       )}
-    </TouchableOpacity>
+    </>
+  );
+
+  const buttonStyle = createPlatformStyle<ViewStyle>(
+    {
+      ...styles.button,
+      ...getSizeStyles(),
+    },
+    {
+      web: {
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        outlineWidth: 0,
+      },
+    }
+  );
+
+  if (Platform.OS === 'ios') {
+    return (
+      <TouchableOpacity
+        testID={testID}
+        onPress={onPress}
+        disabled={disabled || loading}
+        style={[
+          buttonStyle,
+          {
+            backgroundColor: getBackgroundColor(false),
+            borderColor: getBorderColor(),
+          },
+          style,
+        ]}
+        activeOpacity={0.7}
+      >
+        {renderContent(false)}
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <Pressable
+      testID={testID}
+      onPress={onPress}
+      disabled={disabled || loading}
+      style={(state: PressableStateCallbackType) => [
+        buttonStyle,
+        {
+          backgroundColor: getBackgroundColor(state.pressed),
+          borderColor: getBorderColor(),
+        },
+        style,
+      ]}
+    >
+      {(state: PressableStateCallbackType) => renderContent(state.pressed)}
+    </Pressable>
   );
 }
 
-const baseButtonStyles: ViewStyle = {
-  borderRadius: BorderRadius.md,
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexDirection: 'row',
-};
-
-const baseTextStyles: TextStyle = {
-  fontSize: Typography.sizes.md,
-  fontWeight: '600',
-  textAlign: 'center',
-};
-
-const webButtonStyles: ViewStyle = Platform.select({
-  web: {
-    cursor: 'pointer' as const,
-  },
-  default: {},
-});
-
 const styles = StyleSheet.create({
-  button: baseButtonStyles,
-  text: baseTextStyles,
-  disabled: {
-    opacity: 0.6,
+  button: {
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    marginVertical: Spacing.xs,
+    width: '100%',
+    ...platformShadow(0.1, 2),
   },
-  webButton: webButtonStyles,
+  text: {
+    fontWeight: Typography.weights.medium,
+    textAlign: 'center',
+  },
 });

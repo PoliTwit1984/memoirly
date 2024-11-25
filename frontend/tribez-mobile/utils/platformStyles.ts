@@ -1,80 +1,102 @@
 import { Platform, ViewStyle, TextStyle, ImageStyle } from 'react-native';
 
 type Style = ViewStyle | TextStyle | ImageStyle;
-type PlatformStyles<T extends Style> = {
+type PlatformOSType = typeof Platform.OS;
+
+export const isWeb = () => Platform.OS === 'web';
+
+interface WebStyle extends ViewStyle {
+  cursor?: string;
+  transition?: string;
+  outline?: string;
+  outlineStyle?: string;
+  outlineWidth?: number;
+  userSelect?: string;
+}
+
+export const platformShadow = (
+  opacity: number = 0.2,
+  height: number = 2,
+  radius: number = 2,
+  elevation: number = 2
+): ViewStyle => {
+  if (Platform.OS === 'ios') {
+    return {
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height,
+      },
+      shadowOpacity: opacity,
+      shadowRadius: radius,
+    };
+  }
+
+  if (Platform.OS === 'android') {
+    return {
+      elevation,
+    };
+  }
+
+  // Web shadow
+  return {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height,
+    },
+    shadowOpacity: opacity,
+    shadowRadius: radius,
+  };
+};
+
+type PlatformStyles<T> = {
   ios?: Partial<T>;
   android?: Partial<T>;
-  web?: Partial<T>;
+  web?: Partial<WebStyle>;
   default?: Partial<T>;
 };
 
-export function getPlatformStyles<T extends Style>(styles: PlatformStyles<T>): Partial<T> {
-  const platformKey = Platform.OS;
-  const platformSpecificStyles = styles[platformKey as keyof PlatformStyles<T>] || {};
-  const defaultStyles = styles.default || {};
-
-  return {
-    ...defaultStyles,
-    ...platformSpecificStyles,
-  };
-}
-
-export function createPlatformStyle<T extends Style>(
+export const createPlatformStyle = <T extends Style>(
   baseStyle: T,
-  platformSpecific: PlatformStyles<T> = {}
-): T {
+  platformStyles: PlatformStyles<T>
+): T => {
+  const platformStyle = (() => {
+    switch (Platform.OS) {
+      case 'ios':
+        return platformStyles.ios;
+      case 'android':
+        return platformStyles.android;
+      case 'web':
+        return platformStyles.web;
+      default:
+        return platformStyles.default;
+    }
+  })();
+
   return {
     ...baseStyle,
-    ...getPlatformStyles(platformSpecific),
+    ...(platformStyle || {}),
   } as T;
-}
+};
 
-export function isWeb(): boolean {
-  return Platform.OS === 'web';
-}
+export const webOnlyStyle = <T extends Style>(style: Partial<WebStyle>): Partial<T> => {
+  if (Platform.OS === 'web') {
+    return style as Partial<T>;
+  }
+  return {};
+};
 
-export function isIOS(): boolean {
-  return Platform.OS === 'ios';
-}
+export const nativeOnlyStyle = <T extends Style>(style: Partial<T>): Partial<T> => {
+  if (Platform.OS !== 'web') {
+    return style;
+  }
+  return {};
+};
 
-export function isAndroid(): boolean {
-  return Platform.OS === 'android';
-}
-
-export function isNative(): boolean {
-  return Platform.OS !== 'web';
-}
-
-export const webShadow = (opacity: number = 0.1, y: number = 2, blur: number = 8): ViewStyle => 
-  isWeb() ? {
-    boxShadow: `0 ${y}px ${blur}px rgba(0, 0, 0, ${opacity})`,
-  } : {};
-
-export const nativeShadow = (opacity: number = 0.1, elevation: number = 4): ViewStyle =>
-  isNative() ? {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: opacity,
-    shadowRadius: elevation,
-    elevation,
-  } : {};
-
-export const platformShadow = (
-  opacity: number = 0.1,
-  elevation: number = 4,
-  webY: number = 2,
-  webBlur: number = 8
-): ViewStyle => ({
-  ...webShadow(opacity, webY, webBlur),
-  ...nativeShadow(opacity, elevation),
-});
-
-export const platformSelect = <T>(options: {
-  ios?: T;
-  android?: T;
-  web?: T;
-  default: T;
-}): T => {
-  const platform = Platform.OS;
-  return options[platform as keyof typeof options] || options.default;
+export const conditionalStyle = <T extends Style>(
+  condition: boolean,
+  style: Partial<T>
+): Partial<T> => {
+  return condition ? style : {};
 };
