@@ -1,0 +1,246 @@
+# Memoirly Design Document
+
+## Project Overview
+
+Memoirly is a platform for sharing and preserving family memories through guided questions, multimedia content, and collaborative storytelling. The application is built with a Flask backend using Azure cloud services and a React Native frontend for cross-platform support.
+
+## System Architecture
+
+### Backend Structure
+
+```
+/backend
+├── app.py                  # Application entry point
+├── auth/                  # Authentication module
+│   └── __init__.py       # Login, register, session management
+├── config/               # Configuration module
+│   └── __init__.py      # App settings, environment vars
+├── models/              # Data models
+│   ├── base.py         # Base Cosmos DB model
+│   ├── user.py         # User management
+│   ├── tribe.py        # Group/tribe management
+│   ├── content.py      # Questions, answers, comments
+│   ├── notification.py # User notifications
+│   └── family.py       # Family member profiles
+├── routes/             # API endpoints
+│   ├── tribes.py      # Tribe management routes
+│   ├── questions.py   # Question handling
+│   └── family.py      # Family member operations
+└── utils/             # Utility functions
+    ├── azure.py       # Azure services integration
+    ├── file_utils.py  # File operations
+    ├── ai_utils.py    # AI/ML integrations
+    ├── email_utils.py # Email services
+    ├── time_utils.py  # Time formatting
+    └── notification_utils.py # Notification handling
+```
+
+### Frontend Structure (React Native)
+
+```
+/frontend/memoirly-mobile
+├── src/
+│   ├── components/     # Reusable UI components
+│   ├── screens/       # Main app screens
+│   ├── navigation/    # Navigation config
+│   ├── services/      # API integration
+│   └── styles/        # Theme and styling
+```
+
+## Data Model
+
+### Core Entities
+
+1. User
+```typescript
+{
+    id: UUID,
+    type: "user",
+    email: string,
+    name: string,
+    password_hash: string,
+    created_at: DateTime,
+    updated_at: DateTime
+}
+```
+
+2. Tribe (Family/Group)
+```typescript
+{
+    id: UUID,
+    type: "tribe",
+    name: string,
+    description: string,
+    owner_id: UUID,
+    join_code: string,
+    created_at: DateTime,
+    updated_at: DateTime
+}
+```
+
+3. TribeMembership
+```typescript
+{
+    id: UUID,
+    type: "tribe_membership",
+    user_id: UUID,
+    tribe_id: UUID,
+    role: "admin" | "member",
+    notification_settings: {
+        questions: boolean,
+        answers: boolean,
+        comments: boolean,
+        reactions: boolean,
+        digest: "daily" | "weekly" | "monthly"
+    },
+    created_at: DateTime,
+    updated_at: DateTime
+}
+```
+
+4. Question
+```typescript
+{
+    id: UUID,
+    type: "question",
+    content: string,
+    family_member_id: UUID,
+    tribe_id: UUID,
+    created_by_id: UUID,
+    category: string,
+    position: number,
+    visibility: "tribe" | "public",
+    is_collaborative: boolean,
+    created_at: DateTime,
+    updated_at: DateTime
+}
+```
+
+## Cloud Infrastructure
+
+### Azure Services
+
+1. Cosmos DB
+- Single container with type-based partitioning
+- Partition key: /type
+- Optimized for frequent reads
+- Consistent indexing strategy
+
+2. Blob Storage
+- Container: 'uploads'
+- UUID-based file naming
+- Content types:
+  * Images (png, jpg, jpeg, gif)
+  * Audio (mp3, wav)
+  * Documents (pdf)
+
+### Security
+
+1. Authentication
+- Flask-Login for session management
+- JWT for API authentication
+- Secure password hashing
+
+2. Authorization
+- Role-based access control
+- Resource-level permissions
+- Tribe-based content isolation
+
+## API Design
+
+### Core Endpoints
+
+1. Authentication
+```
+POST /auth/register
+POST /auth/login
+POST /auth/logout
+```
+
+2. Tribes
+```
+GET  /tribes
+POST /tribes/create
+POST /tribes/join
+GET  /tribes/{id}
+```
+
+3. Questions
+```
+GET  /api/questions/{member_id}
+POST /api/questions/add/{member_id}
+POST /api/questions/improve/{member_id}
+```
+
+4. Family Members
+```
+GET  /family/dashboard
+POST /family/add_member
+GET  /family/member/{id}
+```
+
+## Implementation Guidelines
+
+1. Database Operations
+- Use base model methods consistently
+- Implement proper error handling
+- Maintain audit trails
+- Use batch operations where possible
+
+2. File Handling
+- Validate file types
+- Generate unique names
+- Implement secure uploads
+- Clean up unused files
+
+3. Security Measures
+- Validate all inputs
+- Sanitize user content
+- Implement rate limiting
+- Use secure sessions
+
+4. Performance
+- Optimize queries
+- Implement caching
+- Use appropriate indexes
+- Monitor performance metrics
+
+## Maintenance
+
+1. Monitoring
+- Application logs
+- Performance metrics
+- Error tracking
+- Usage statistics
+
+2. Backup Strategy
+- Regular database backups
+- File storage redundancy
+- Configuration backups
+- Disaster recovery plan
+
+3. Updates
+- Security patches
+- Dependency updates
+- Feature deployments
+- Database migrations
+
+## Development Workflow
+
+1. Version Control
+- Feature branches
+- Pull request reviews
+- Automated testing
+- Continuous integration
+
+2. Deployment
+- Staging environment
+- Production releases
+- Rollback procedures
+- Health checks
+
+3. Documentation
+- API documentation
+- Code comments
+- Architecture updates
+- Change logs
